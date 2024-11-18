@@ -47,31 +47,21 @@ bash eval_3D_blend_cond.sh
 ```
 
 
-Repository Structure
-bash
-Copy code
-├── scripts/                   # Contains training and inference scripts
-├── models/                    # Implementation of DiffusionBlend model
-├── data/                      # Example synthetic and real CT datasets
-├── utils/                     # Helper functions for preprocessing and metrics
-├── train_SVCT_3D_triplane.sh  # Script for training
-├── eval_3D_blend_cond.sh      # Script for inference
-└── README.md                  # Project documentation
-Citation
+## Citation
 If you find this work useful in your research, please cite:
 
-bibtex
-Copy code
+
 @inproceedings{diffusionblend2024,
   title={DiffusionBlend: Learning 3D Image Prior through Position-aware Diffusion Score Blending for 3D Computed Tomography Reconstruction},
   author={Your Name and Collaborators},
   booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
   year={2024}
 }
-Acknowledgements
-We thank the contributors and the NeurIPS community for their valuable feedback and discussions. This work was supported by [Funding Source].
 
-License
+## Acknowledgements
+We thank the contributors and the NeurIPS community for their valuable feedback and discussions.
+
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 
