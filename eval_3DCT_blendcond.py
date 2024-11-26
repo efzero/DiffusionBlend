@@ -80,10 +80,6 @@ class Diffusion(object):
         config_dict['use_spacecode'] = False
         config_dict["class_cond"] = True
         model = create_model(**config_dict)
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/GD3D_finetune_2242024_iter" + str(20099) + ".ckpt"
-#         ckpt = "/scratch/liyues_root/liyues1/shared_data/3DCT/checkpoints/GD3D_finetune_412024_iter20099.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter50099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter60099_cond.ckpt"
         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter65099_cond.ckpt"
         
         model.load_state_dict(torch.load(ckpt, map_location=self.device)["state_dict"])
@@ -107,18 +103,6 @@ class Diffusion(object):
         
         et = torch.zeros((1, num_batches * 3, 256, 256)).to(xt.device).to(torch.float32)
         xt = torch.reshape(xt, (1, num_batches * 3, 256, 256))
-                        #########################################stack blending########################################
-    #                     for j in range(xt.shape[1]-2):
-    #                         et_sing = model(xt[:,j:(j+3),:,:], t)[:,:3]
-    #                         et[:,j:(j+3),:,:] = et_sing
-                        ###############random blending algorithm###########################
-                             ###################################score averaging######################################           
-    #                     for j in range(1, xt.shape[0]-1):
-    #                         if (j==1) or (j== (xt.shape[0]-2)):
-    #                             et[:,j,:,:] = et[:,j,:,:]/2
-    #                         else:
-    #                             et[:,j,:,:] = et[:,j,:,:]/3   
-                        ###########################################################################
         et[:,:3,:,:] = model(xt[:,:3,:,:], t, **model_kwargs)[:,:3]
         et[:,xt.shape[1]-3:, :,:] = model(xt[:,xt.shape[1]-3:,:,:], t, **model_kwargs)[:,:3]
         
@@ -159,78 +143,22 @@ class Diffusion(object):
         # parameters to be moved to args
         Nview = self.args.Nview
         rho = self.args.rho
-        rho = 0.001 ###4:00pm 3/3
-        rho = 5 ###4:17pm 3/3
-        rho = 2.5 ###6:14pm 3/3
-        rho = 10.0 ###8:38pm 3/3
-        rho = 5.0 ###9:01pm 3/3
         rho = 0.001 ###9:23pm 3/3
         lamb = self.args.lamb
         lamb = 0.05 * 1e-3
         n_ADMM = 1
         n_CG = self.args.CG_iter
         print(n_CG)
-        
-        blend = True
-        blend = False
-        blend = True
-        blend = False ###8:38pm 3/3
-        blend = True ### 9:23pm 3/3
-        blend = False ### 9:28pm 3/3
-        blend = True ### 1:48 3/10
-        blend = False ### 2:52 3/10
-        blend = True ### 4:44 3/10
-        blend = False ### 7:30 3/10
-        blend = True
-        blend = False ###9:49 3/10
-        blend = True ###12:05pm 3/11
-        blend = False ###12:32pm 3/11
-        blend = True ####11:17pm 3/20
-        blend = False ####1:22pm 3/20
-        blend = True #####1:31pm 3/24
-        blend=False ### ablation 4/7
+
         blend= True ####test again 4/7
         
-        
-        time_travel = False ###8:39 3/9
-        time_travel = True ###8:39 3/9
-        time_travel = False ### 9:58 3/9 debug
-        time_travel = True ###10:13 3/9 debug
-        time_travel = False ###10:13 3/9 debug
-        time_travel = True ###1:48 3/10
+
         time_travel = False ### 4:20 3/10
-        
-        
-        vps= True ###5:47pm 3/10
-        vps_scale = 0.01 ###5:47pm 3/10
-        vps_scale = 0.025 ###5:47pm 3/10
-        vps_scale = 0.2 ###9:03pm 3/10
-        vps_scale = 0.4 ###9:48pm 3/10
-        vps_scale = 0.25 ###11:15am 3/11
-        vps_scale = 0.5 ###12:59pm 3/11
-        vps = False  ####11:17pm 3/20
-        vps = True ####1:31pm 3/24
-        vps_scale = 0.1 ####1:31pm 3/24
-        vps_scale = 0.05 ####2:32pm 3/24
-#         vps_scale = 0.035 ####5:03pm 3/24
         vps_scale = 0.03
         vps = False ###debugging
         
-        ddimsteps = 100
-        ddimsteps = 200 ###4:17pm 3/3
-        ddimsteps = 100 ###8:08pm 3/9
-        ddimsteps = 20 ###8:08pm 3/9 ###debug
-        ddimsteps = 100 ###10:19 time travel trial
-        ddimsteps = 50
-#         ddimsteps = 300
         ddimsteps = 200 ###7/30 7:54pm
-#         ddimsteps = 800
-#         ddimsteps= 200  ####11:17pm 3/20
-        
-        ####1:21 try hard consistency for only one time
-        
-        print(rho, lamb, "admm params")
-        print("blending", blend)
+
         
         # Specify save directory for saving generated samples
         save_root = Path(self.args.image_folder)
@@ -241,31 +169,15 @@ class Diffusion(object):
             save_root_f = save_root / t
             save_root_f.mkdir(parents=True, exist_ok=True)
         
-        # read all data
-        ##################################old data##################################
-#         fname_list = os.listdir(root)
-#         fname_list = sorted(fname_list, key=lambda x: float(x.split(".")[0]))
-#         fname_list = fname_list[:60]
-        ######################################################################################################
-        
+
         ##################################new data##################################
         fname_list = os.listdir("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation")
         root = "/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation"
 #         fname_list = sorted(fname_list, key=lambda x: float(x.split(".")[0]))[:60]
         fname_list.sort()
-#         fname_list=fname_list[:60]
-#         num_batches = 180 ###3/22
-    
-#         num_batches = 180  ####3/24 1:31pm ####should be divisible by 9
-#         num_batches = 120
-#         num_batches = 21
-#         num_batches = 84 ###4/22/2024 2:16
-    
-#         pre_slices = 126
-#         pre_slices = 189
+
         pre_slices = 0
         num_batches = 168
-#         num_batches = 21
         fname_list = fname_list[pre_slices:(pre_slices+ 3 * num_batches)]
         ######################################################################################################
     
@@ -334,20 +246,6 @@ class Diffusion(object):
         x = torch.reshape(init_noise, (num_batches, 3, 256, 256))
         
         
-        
-        ##################################################
-#         x = torch.randn(num_batches, 3, 256, 256, device = self.device) ####initial noise
-    
-    
-        
-        ##################################################################################################
-        
-        ##################################fix noise###################################################
-#         noise = torch.rand(256, 256, device = self.device)
-#         x = torch.rand(1, 60, 256,256, device = self.device)
-#         for l in range(60):
-#             x[0,l,:,:] = noise.clone()
-#         x = x.to(torch.float32)
         diffusion = create_gaussian_diffusion(
         steps=1000,
         learn_sigma=True,
@@ -365,23 +263,11 @@ class Diffusion(object):
             x0_preds = []
             xt = x ###20 x 3 x 256 x 256
             
-#             # generate time schedule
-#             times = range(0, 1000, skip)  #########0, 1, 2, ....
-#             times_next = [-1] + list(times[:-1])
-#             times_pair = zip(reversed(times), reversed(times_next))
-            
-            
-            #########for middle init
-            times = range(0, 500, skip)
+            # generate time schedule
+            times = range(0, 1000, skip)  #########0, 1, 2, ....
             times_next = [-1] + list(times[:-1])
             times_pair = zip(reversed(times), reversed(times_next))
-            ##################################
             
-            if blend:
-                n = 1
-            else:
-                n = 1
-                
             ct = 0
             ###################################start reverse sampling############################################
             for i, j in tqdm.tqdm(times_pair, total=len(times)):  
@@ -440,22 +326,18 @@ class Diffusion(object):
                         et_ = torch.reshape(et_, ((num_batches * 3), 1, 256, 256))
                     xt_ = torch.reshape(xt, ((num_batches * 3), 1, 256, 256))
                     x0_t = (xt_ - et_ * (1 - at).sqrt()) / at.sqrt()  ###60 x 1 x 256 x 256 scale [-1, 1]
-                    
-                    
-                    
-                    
-                    
+
                     ###########################if inverse problem solving ######################################################
-#                     x0_t = torch.clip(x0_t, -1, 1) ####clip to [-1, 1]
-#                     x0_t = (x0_t +1)/2 ###rescale to [0, 1]
-#                     x0_t_hat = None
-#                     eta = self.args.eta
-#                     if zhoumu == 0:
-#                         x0_t_hat = ADMM(x0_t, ATy, n_ADMM=n_ADMM) ######[0,1]
-# #                         x0_t_hat = torch.clip(x0_t_hat, 0, 1)
-#                         x0_t_hat = x0_t_hat * 2 - 1 #######rescale back to [-1, 1]
-#                     else:
-#                         x0_t_hat = x0_t * 2 - 1 #######rescale back to [-1, 1]
+                    x0_t = torch.clip(x0_t, -1, 1) ####clip to [-1, 1]
+                    x0_t = (x0_t +1)/2 ###rescale to [0, 1]
+                    x0_t_hat = None
+                    eta = self.args.eta
+                    if zhoumu == 0:
+                        x0_t_hat = ADMM(x0_t, ATy, n_ADMM=n_ADMM) ######[0,1]
+#                         x0_t_hat = torch.clip(x0_t_hat, 0, 1)
+                        x0_t_hat = x0_t_hat * 2 - 1 #######rescale back to [-1, 1]
+                    else:
+                        x0_t_hat = x0_t * 2 - 1 #######rescale back to [-1, 1]
             ############################################################################################################
     
                     ###########################else######################################################
@@ -469,35 +351,30 @@ class Diffusion(object):
                     else:
                         xt_ = x0_t_hat
                     xt = torch.reshape(xt_, (num_batches, 3, 256, 256)) ####reshape back
-                    
-#             np.save("ctrecon_ablation_jumpinf_300NFE.npy", xt.detach().cpu().numpy())
 
 ######################################################################################################
-            np.save("ctsemicond_gen200nfe.npy", xt.detach().cpu().numpy())
-#             if noise_flag:
-#                 print("added noise")
-#                 np.save(f"ctrecon_jump_200NFE_{self.args.Nview}projs_pgnoise.npy", xt.detach().cpu().numpy())
-#             else:
-#                 np.save(f"ctrecon_jump_200NFE_{self.args.Nview}projs.npy", xt.detach().cpu().numpy())
+            if noise_flag:
+                print("added noise")
+                np.save(f"ctrecon_jump_200NFE_{self.args.Nview}projs_pgnoise.npy", xt.detach().cpu().numpy())
+            else:
+                np.save(f"ctrecon_jump_200NFE_{self.args.Nview}projs.npy", xt.detach().cpu().numpy())
                     
-#             if self.args.deg == "SV-CT":
-#                 np.save("x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_view6_47_jump_ful.npy", xt.detach().cpu().numpy())
-#             if self.args.deg == "LA-CT":
-#                 np.save("x_sample_ddim" + str(ddimsteps) + f"_iter65000_lactL67_blend3_half{pre_slices}_full_view90.npy", xt.detach().cpu().numpy())
+            if self.args.deg == "SV-CT":
+                np.save("x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_view6_47_jump_ful.npy", xt.detach().cpu().numpy())
+            if self.args.deg == "LA-CT":
+                np.save("x_sample_ddim" + str(ddimsteps) + f"_iter65000_lactL67_blend3_half{pre_slices}_full_view90.npy", xt.detach().cpu().numpy())
                 
             
-#             if blend:
-#                 if vps:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho"+str(rho)+"ttnew"+str(tot_iters)+"_vps_"+ str(vps_scale)+"_full_skip2.npy", xt.detach().cpu().numpy())
-#                 else:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
-#             else:
-#                 if vps:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) +"_vps_"+ str(vps_scale)+ "_full_skip2_view6.npy", xt.detach().cpu().numpy())   
-#                 else:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
+            if blend:
+                if vps:
+                    np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho"+str(rho)+"ttnew"+str(tot_iters)+"_vps_"+ str(vps_scale)+"_full_skip2.npy", xt.detach().cpu().numpy())
+                else:
+                    np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
+            else:
+                if vps:
+                    np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) +"_vps_"+ str(vps_scale)+ "_full_skip2_view6.npy", xt.detach().cpu().numpy())   
+                else:
+                    np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
 
-#             x_sample = diffusion.ddim_sample_loop_progressive(model, (10,3,256,256), noise = x, task = "None", progress= True)
-#             np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/x_sample_ddim_iter" + str(15000) + "_uncondition.npy", x_sample.detach().cpu().numpy())
 
             
