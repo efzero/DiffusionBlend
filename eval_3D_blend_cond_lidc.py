@@ -80,20 +80,6 @@ class Diffusion(object):
         config_dict['use_spacecode'] = False
         config_dict["class_cond"] = True
         model = create_model(**config_dict)
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/GD3D_finetune_2242024_iter" + str(20099) + ".ckpt"
-#         ckpt = "/scratch/liyues_root/liyues1/shared_data/3DCT/checkpoints/GD3D_finetune_412024_iter20099.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter50099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter60099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/triplane3D_finetune_452024_iter65099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4202024_iter70099_cond.ckpt" ###4/22 1:30pm
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4212024_iter30099_cond.ckpt" ###4/22 2:20 pm
-        
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4212024_iter40099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4212024_iter50099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4212024_iter70099_cond.ckpt"
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4202024_iter70099_cond.ckpt" 
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4202024_iter65099_cond.ckpt" ###4/22
-#         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetune_4232024_iter56099_cond.ckpt"
         ckpt = "/nfs/turbo/coe-liyues/bowenbw/3DCT/checkpoints/LIDC_triplane3D_finetunelarge_4232024_iter62099_cond.ckpt"
         
         model.load_state_dict(torch.load(ckpt, map_location=self.device)["state_dict"])
@@ -117,18 +103,6 @@ class Diffusion(object):
         
         et = torch.zeros((1, num_batches * 3, 256, 256)).to(xt.device).to(torch.float32)
         xt = torch.reshape(xt, (1, num_batches * 3, 256, 256))
-                        #########################################stack blending########################################
-    #                     for j in range(xt.shape[1]-2):
-    #                         et_sing = model(xt[:,j:(j+3),:,:], t)[:,:3]
-    #                         et[:,j:(j+3),:,:] = et_sing
-                        ###############random blending algorithm###########################
-                             ###################################score averaging######################################           
-    #                     for j in range(1, xt.shape[0]-1):
-    #                         if (j==1) or (j== (xt.shape[0]-2)):
-    #                             et[:,j,:,:] = et[:,j,:,:]/2
-    #                         else:
-    #                             et[:,j,:,:] = et[:,j,:,:]/3   
-                        ###########################################################################
         et[:,:3,:,:] = model(xt[:,:3,:,:], t, **model_kwargs)[:,:3]
         et[:,xt.shape[1]-3:, :,:] = model(xt[:,xt.shape[1]-3:,:,:], t, **model_kwargs)[:,:3]
         
@@ -164,75 +138,24 @@ class Diffusion(object):
         
         # parameters to be moved to args
         Nview = self.args.Nview
-        rho = self.args.rho
-        rho = 0.001 ###4:00pm 3/3
-        rho = 5 ###4:17pm 3/3
-        rho = 2.5 ###6:14pm 3/3
-        rho = 10.0 ###8:38pm 3/3
-        rho = 5.0 ###9:01pm 3/3
         rho = 0.001 ###9:23pm 3/3
-        lamb = self.args.lamb
         lamb = 0.05/1000
         n_ADMM = 1
         n_CG = self.args.CG_iter
         print(n_CG)
-        
-        blend = True
-        blend = False
-        blend = True
-        blend = False ###8:38pm 3/3
-        blend = True ### 9:23pm 3/3
-        blend = False ### 9:28pm 3/3
-        blend = True ### 1:48 3/10
-        blend = False ### 2:52 3/10
-        blend = True ### 4:44 3/10
-        blend = False ### 7:30 3/10
-        blend = True
-        blend = False ###9:49 3/10
-        blend = True ###12:05pm 3/11
-        blend = False ###12:32pm 3/11
-        blend = True ####11:17pm 3/20
-        blend = False ####1:22pm 3/20
-        blend = True #####1:31pm 3/24
-        blend=False ### ablation 4/7
+
         blend= True ####test again 4/7
-        
-        
-        time_travel = False ###8:39 3/9
-        time_travel = True ###8:39 3/9
-        time_travel = False ### 9:58 3/9 debug
-        time_travel = True ###10:13 3/9 debug
-        time_travel = False ###10:13 3/9 debug
-        time_travel = True ###1:48 3/10
+
         time_travel = False ### 4:20 3/10
         
-        
-        vps= True ###5:47pm 3/10
-        vps_scale = 0.01 ###5:47pm 3/10
-        vps_scale = 0.025 ###5:47pm 3/10
-        vps_scale = 0.2 ###9:03pm 3/10
-        vps_scale = 0.4 ###9:48pm 3/10
-        vps_scale = 0.25 ###11:15am 3/11
-        vps_scale = 0.5 ###12:59pm 3/11
-        vps = False  ####11:17pm 3/20
-        vps = True ####1:31pm 3/24
-        vps_scale = 0.1 ####1:31pm 3/24
-        vps_scale = 0.05 ####2:32pm 3/24
-#         vps_scale = 0.035 ####5:03pm 3/24
-        vps_scale = 0.03
         vps = False ###debugging
-        
-        ddimsteps = 100
-        ddimsteps = 200 ###4:17pm 3/3
-        ddimsteps = 100 ###8:08pm 3/9
-        ddimsteps = 20 ###8:08pm 3/9 ###debug
-        ddimsteps = 100 ###10:19 time travel trial
+
         ddimsteps= 200  ####11:17pm 3/20
         
         ####1:21 try hard consistency for only one time
         
-        print(rho, lamb, "admm params")
-        print("blending", blend)
+#         print(rho, lamb, "admm params")
+#         print("blending", blend)
         
         # Specify save directory for saving generated samples
         save_root = Path(self.args.image_folder)
@@ -242,38 +165,14 @@ class Diffusion(object):
         for t in irl_types:
             save_root_f = save_root / t
             save_root_f.mkdir(parents=True, exist_ok=True)
-        
-        # read all data
-        ##################################old data##################################
-#         fname_list = os.listdir(root)
-#         fname_list = sorted(fname_list, key=lambda x: float(x.split(".")[0]))
-#         fname_list = fname_list[:60]
-        ######################################################################################################
-        
-        ##################################new data##################################
-#         fname_list = os.listdir("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation")
+
         fname_list = os.listdir("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation_LIDC")
-#         root = "/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation"
         root = "/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/validation_LIDC"
         
-#         fname_list = sorted(fname_list, key=lambda x: float(x.split(".")[0]))[:60]
         fname_list.sort()
-#         fname_list=fname_list[:60]
-#         num_batches = 180 ###3/22
-    
-#         num_batches = 180  ####3/24 1:31pm ####should be divisible by 9
-#         num_batches = 120
-        num_batches = 21
-#         num_batches = 87
-#         num_batches = 87 ######4/22 2:16pm 
-    
-#         num_batches = 21 #####4/22 2:22pm
-        
-#         num_batches = 15 #####4/22 7:05pm
-        
+        num_batches = 87 ######4/22 2:16pm 
         fname_list = fname_list[:(3 * num_batches)] #####4/22 2:22pm
-#         
-#         fname_list = fname_list[-(3*num_batches):] ####4/22 7:05pm
+
         ######################################################################################################
     
         print(fname_list)
@@ -322,16 +221,9 @@ class Diffusion(object):
         print(Apy.shape, "Apy backprojection shape")
         ATy = A_funcs.AT(y)
         ##########################original####################################################
-#         x = torch.randn(20, 3, 256, 256, device = self.device) ####initial noise
         x = torch.randn(num_batches, 3, 256, 256, device = self.device) ####initial noise
         ##################################################################################################
-        
-        ##################################fix noise###################################################
-#         noise = torch.rand(256, 256, device = self.device)
-#         x = torch.rand(1, 60, 256,256, device = self.device)
-#         for l in range(60):
-#             x[0,l,:,:] = noise.clone()
-#         x = x.to(torch.float32)
+
         diffusion = create_gaussian_diffusion(
         steps=1000,
         learn_sigma=True,
@@ -387,10 +279,6 @@ class Diffusion(object):
                                 ####################added by bowen 3/24/2024####################
                                 et = self.vps_blend(xt, model, t, num_batches = num_batches)
                                 ####################################################################
-    #                             if blend:
-    #                                 et = self.blendscore(xt, model, t, start_ind = 0)
-    #                             else:
-    #                                 et = self.blendscore(xt, model,t, start_head = 1) ###1 x 60 x 256 x 256
                                 et = torch.reshape(et, (num_batches, 3, 256, 256))
                                 lam_ = vps_scale
                                 xt = xt - lam_ * (1 - at).sqrt() * et
@@ -438,24 +326,7 @@ class Diffusion(object):
             if self.args.deg == "SV-CT":
                 np.save("x_sample_ddim" + str(ddimsteps) + "_iter62000large_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_view4_424_jump_LIDC_ftldct_half_retest.npy", xt.detach().cpu().numpy()) #############imnet pretrain 40000 iters
                 
-#                 np.save("x_sample_ddim" + str(ddimsteps) + "_iter70000_reconstructionL67_blend3_rho" + str(rho) +  "_view8_421_jump_LIDC_ftldct_half2.npy", xt.detach().cpu().numpy())
                 
             if self.args.deg == "LA-CT":
                 np.save("x_sample_ddim" + str(ddimsteps) + "_iter62000large_lactlidc_blend3_full_view90.npy", xt.detach().cpu().numpy())
                 
-            
-#             if blend:
-#                 if vps:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho"+str(rho)+"ttnew"+str(tot_iters)+"_vps_"+ str(vps_scale)+"_full_skip2.npy", xt.detach().cpu().numpy())
-#                 else:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_blend3_rho" + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
-#             else:
-#                 if vps:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) +"_vps_"+ str(vps_scale)+ "_full_skip2_view6.npy", xt.detach().cpu().numpy())   
-#                 else:
-#                     np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/apr7/x_sample_ddim" + str(ddimsteps) + "_iter65000_reconstructionL67_rho"  + str(rho) + "ttnew" + str(tot_iters) + "_full_jump_skip2_view6.npy", xt.detach().cpu().numpy())
-
-#             x_sample = diffusion.ddim_sample_loop_progressive(model, (10,3,256,256), noise = x, task = "None", progress= True)
-#             np.save("/nfs/turbo/coe-liyues/bowenbw/3DCT/benchmark/blendDDS/x_sample_ddim_iter" + str(15000) + "_uncondition.npy", x_sample.detach().cpu().numpy())
-
-            
