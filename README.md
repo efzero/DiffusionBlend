@@ -53,7 +53,7 @@ If you find this work useful in your research, please cite:
 
 @inproceedings{diffusionblend2024,
   title={DiffusionBlend: Learning 3D Image Prior through Position-aware Diffusion Score Blending for 3D Computed Tomography Reconstruction},
-  author={Your Name and Collaborators},
+  author={Song, Bowen and Hu, Jason and Luo, Zhaoxu and Fessler, Jeffrey A and Shen, Liyue},
   booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
   year={2024}
 }
