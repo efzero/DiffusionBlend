@@ -10,7 +10,8 @@ Paper link: https://openreview.net/forum?id=h3Kv6sdTWO&referrer=%5Bthe%20profile
 ## Overview
 
 DiffusionBlend introduces a novel method for 3D computed tomography (CT) reconstruction using position-aware diffusion score blending. By leveraging position-specific priors, the framework achieves enhanced reconstruction accuracy while maintaining computational efficiency.
-<img width="917" alt="image" src="https://github.com/user-attachments/assets/d98ae1f3-ac6e-4d0c-b752-446a9aff5d22">
+<img width="919" alt="image" src="https://github.com/user-attachments/assets/3dab4e88-6676-4673-b27a-da6d2e4b8518">
+
 
 
 ---
