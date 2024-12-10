@@ -2,11 +2,16 @@
 
 This repository contains the official implementation of **"DiffusionBlend: Learning 3D Image Prior through Position-aware Diffusion Score Blending for 3D Computed Tomography Reconstruction"**, published at **NeurIPS 2024**.
 
+Paper link: https://openreview.net/forum?id=h3Kv6sdTWO&referrer=%5Bthe%20profile%20of%20Bowen%20Song%5D(%2Fprofile%3Fid%3D~Bowen_Song3)
+
+
 ---
 
 ## Overview
 
 DiffusionBlend introduces a novel method for 3D computed tomography (CT) reconstruction using position-aware diffusion score blending. By leveraging position-specific priors, the framework achieves enhanced reconstruction accuracy while maintaining computational efficiency.
+<img width="917" alt="image" src="https://github.com/user-attachments/assets/d98ae1f3-ac6e-4d0c-b752-446a9aff5d22">
+
 
 ---
 
@@ -45,6 +50,18 @@ To perform inference and evaluate 3D reconstruction using diffusion score blendi
 ```bash
 bash eval_3D_blend_cond.sh
 ```
+
+## Results
+<img width="890" alt="image" src="https://github.com/user-attachments/assets/c9abd6c3-4723-4245-81d1-5d512bfb0c06">
+
+<img width="893" alt="image" src="https://github.com/user-attachments/assets/9abd3ad7-d8cb-4e47-95ce-d955b47405df">
+
+<img width="929" alt="image" src="https://github.com/user-attachments/assets/56110385-4540-49da-88b4-d6145f15bf2c">
+
+
+
+
+
 
 
 ## Citation
